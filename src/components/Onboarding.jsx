@@ -32,7 +32,7 @@ export function Onboarding({ onDone }) {
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center"
-      style={{ background: '#0F0F1A' }}>
+      style={{ background: 'var(--bg-main)' }}>
       <div className="w-full max-w-[430px] h-full flex flex-col items-center justify-center px-8">
         {/* Emoji */}
         <div
@@ -45,8 +45,8 @@ export function Onboarding({ onDone }) {
 
         {/* Content */}
         <div className="text-center onboard-slide" key={`content-${current}`}>
-          <h2 className="text-2xl font-bold text-white mb-3">{slide.title}</h2>
-          <p className="text-sm text-gray-400 leading-relaxed">{slide.desc}</p>
+          <h2 className="text-2xl font-bold mb-3" style={{ color: 'var(--text-primary)' }}>{slide.title}</h2>
+          <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{slide.desc}</p>
         </div>
 
         {/* Dots */}
@@ -58,7 +58,7 @@ export function Onboarding({ onDone }) {
               style={{
                 width: i === current ? 20 : 6,
                 height: 6,
-                background: i === current ? '#6C63FF' : 'rgba(255,255,255,0.2)',
+                background: i === current ? '#6C63FF' : 'var(--border-medium)',
               }}
             />
           ))}
@@ -77,7 +77,7 @@ export function Onboarding({ onDone }) {
 
         {/* Skip */}
         {!slide.isFinal && (
-          <button onClick={onDone} className="mt-4 text-sm text-gray-500">
+          <button onClick={onDone} className="mt-4 text-sm font-medium" style={{ color: 'var(--text-tertiary)' }}>
             Skip for now
           </button>
         )}

@@ -1,16 +1,21 @@
 import { useState, useEffect } from 'react';
-import { Home, CheckSquare, Calendar, User, Plus, X } from 'lucide-react';
+import { Home, CheckSquare, Calendar, User, Plus, X, Sparkles } from 'lucide-react';
 import { appData } from './data';
 import { HomeTab } from './components/HomeTab';
 import { TasksTab } from './components/TasksTab';
 import { CalendarTab } from './components/CalendarTab';
 import { ProfileTab } from './components/ProfileTab';
 import { QuickAddSheet } from './components/QuickAddSheet';
+import { TaskDetailSheet } from './components/TaskDetailSheet';
 import { Onboarding } from './components/Onboarding';
+import { LoginPage } from './components/LoginPage';
+import { SearchOverlay } from './components/SearchOverlay';
+import { AIStudyPlanner } from './components/AIStudyPlanner';
 
 const NAV_ITEMS = [
   { id: 'home', label: 'Home', Icon: Home },
   { id: 'tasks', label: 'Tasks', Icon: CheckSquare },
+  { id: 'planner', label: 'Plan', Icon: Sparkles },
   { id: 'calendar', label: 'Calendar', Icon: Calendar },
   { id: 'profile', label: 'Profile', Icon: User },
 ];
@@ -19,7 +24,7 @@ function Snackbar({ message, onUndo, onDismiss }) {
   return (
     <div className="fixed bottom-24 left-5 right-5 z-50 snack-slide-up">
       <div className="flex items-center justify-between px-4 py-3 rounded-2xl"
-        style={{ background: '#2D2D4A', border: '1px solid rgba(108,99,255,0.3)', boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }}>
+        style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-focus)', boxShadow: 'var(--shadow-main)' }}>
         <span className="text-sm text-white font-medium">{message}</span>
         <div className="flex items-center gap-3 ml-4">
           <button onClick={onUndo} className="text-sm font-bold" style={{ color: '#6C63FF' }}>Undo</button>
@@ -31,12 +36,22 @@ function Snackbar({ message, onUndo, onDismiss }) {
 }
 
 export default function App() {
+  const [loggedIn, setLoggedIn] = useState(false);
   const [onboarded, setOnboarded] = useState(false);
   const [activeTab, setActiveTab] = useState('home');
   const [assignments, setAssignments] = useState(appData.assignments);
   const [showSheet, setShowSheet] = useState(false);
+  const [editingTask, setEditingTask] = useState(null);
+  const [viewingTask, setViewingTask] = useState(null);
+  const [showSearch, setShowSearch] = useState(false);
+  const [theme, setTheme] = useState(() => localStorage.getItem('studyflow_theme') || 'dark');
   const [snackbar, setSnackbar] = useState(null);
   const [snackTimer, setSnackTimer] = useState(null);
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('studyflow_theme', theme);
+  }, [theme]);
 
   const showSnack = (msg, undoFn) => {
     if (snackTimer) clearTimeout(snackTimer);
@@ -67,9 +82,39 @@ export default function App() {
     showSnack('Task added!', null);
   };
 
+  const handleEditTask = (task) => {
+    setEditingTask(task);
+  };
+
+  const handleSaveTask = (updatedTask) => {
+    setAssignments(as => as.map(a => a.id === updatedTask.id ? updatedTask : a));
+    setEditingTask(null);
+    showSnack('Task updated!', null);
+  };
+
+  const handleDeleteTask = (id) => {
+    const deleted = assignments.find(a => a.id === id);
+    setAssignments(as => as.filter(a => a.id !== id));
+    setEditingTask(null);
+    showSnack('Task deleted · Undo', () => {
+      setAssignments(as => [deleted, ...as]);
+      setSnackbar(null);
+    });
+  };
+
+  if (!loggedIn) return <LoginPage onLogin={() => setLoggedIn(true)} />;
   if (!onboarded) return <Onboarding onDone={() => setOnboarded(true)} />;
 
-  const tabProps = { assignments, onSubmit: handleSubmit, onSnooze: handleSnooze };
+  const tabProps = {
+    assignments,
+    onSubmit: handleSubmit,
+    onSnooze: handleSnooze,
+    onEdit: handleEditTask,
+    onViewDetail: setViewingTask,
+    onSearch: () => setShowSearch(true),
+    theme,
+    setTheme
+  };
 
   return (
     <div className="app-shell">
@@ -77,6 +122,7 @@ export default function App() {
       <div className="scroll-area">
         {activeTab === 'home' && <HomeTab {...tabProps} />}
         {activeTab === 'tasks' && <TasksTab {...tabProps} />}
+        {activeTab === 'planner' && <AIStudyPlanner {...tabProps} />}
         {activeTab === 'calendar' && <CalendarTab {...tabProps} />}
         {activeTab === 'profile' && <ProfileTab {...tabProps} />}
       </div>
@@ -110,12 +156,12 @@ export default function App() {
                   <Icon
                     size={22}
                     strokeWidth={active ? 2.5 : 1.8}
-                    style={{ color: active ? '#6C63FF' : '#4b5563' }}
+                    style={{ color: active ? '#6C63FF' : 'var(--text-secondary)' }}
                   />
                 </div>
                 <span
                   className="text-[10px] font-semibold"
-                  style={{ color: active ? '#6C63FF' : '#4b5563' }}
+                  style={{ color: active ? '#6C63FF' : 'var(--text-secondary)' }}
                 >
                   {label}
                 </span>
@@ -131,6 +177,43 @@ export default function App() {
       {/* Quick Add Sheet */}
       {showSheet && (
         <QuickAddSheet onClose={() => setShowSheet(false)} onAdd={handleAddTask} />
+      )}
+
+      {/* Edit Task Sheet */}
+      {editingTask && (
+        <QuickAddSheet
+          editTask={editingTask}
+          onClose={() => setEditingTask(null)}
+          onSave={handleSaveTask}
+          onDelete={handleDeleteTask}
+        />
+      )}
+
+      {/* Task Detail Sheet */}
+      {viewingTask && (
+        <TaskDetailSheet
+          assignment={viewingTask}
+          onClose={() => setViewingTask(null)}
+          onSubmit={handleSubmit}
+          onSnooze={handleSnooze}
+          onEdit={(task) => {
+            setViewingTask(null);
+            handleEditTask(task);
+          }}
+          onDelete={handleDeleteTask}
+        />
+      )}
+
+      {/* Search Overlay */}
+      {showSearch && (
+        <SearchOverlay
+          assignments={assignments}
+          onClose={() => setShowSearch(false)}
+          onSubmit={handleSubmit}
+          onSnooze={handleSnooze}
+          onEdit={handleEditTask}
+          onViewDetail={setViewingTask}
+        />
       )}
 
       {/* Snackbar */}

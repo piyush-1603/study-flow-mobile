@@ -1,11 +1,21 @@
 import { useState } from 'react';
 import { appData, getSubject, formatCountdown } from '../data';
-import { Bell, X, ChevronRight } from 'lucide-react';
+import { Bell, X, ChevronRight, Search } from 'lucide-react';
 import { TaskCard } from './TaskCard';
 import { HeatmapStrip } from './HeatmapStrip';
 
-export function HomeTab({ assignments, onSubmit, onSnooze }) {
+const SORT_MODES = [
+  { key: 'time-asc',  label: 'Earliest first', icon: '↑' },
+  { key: 'time-desc', label: 'Latest first',   icon: '↓' },
+  { key: 'difficulty', label: 'Difficulty',     icon: '◆' },
+];
+
+const DIFF_RANK = { Hard: 0, Medium: 1, Easy: 2 };
+
+export function HomeTab({ assignments, onSubmit, onSnooze, onEdit, onViewDetail, onSearch }) {
   const [alertDismissed, setAlertDismissed] = useState(false);
+  const [sortIdx, setSortIdx] = useState(0);
+  const [showSortMenu, setShowSortMenu] = useState(false);
   const highAlerts = appData.alerts.filter(a => a.severity === 'high' && !alertDismissed);
   const { subjects } = appData.user;
   const { today_focus } = appData;
@@ -19,9 +29,15 @@ export function HomeTab({ assignments, onSubmit, onSnooze }) {
     assignments.find(a => a.id === id)
   ).filter(Boolean);
 
+  const currentSort = SORT_MODES[sortIdx];
+
   const sorted = [...assignments]
     .filter(a => !a.submitted)
-    .sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+    .sort((a, b) => {
+      if (currentSort.key === 'time-asc') return new Date(a.deadline) - new Date(b.deadline);
+      if (currentSort.key === 'time-desc') return new Date(b.deadline) - new Date(a.deadline);
+      return (DIFF_RANK[a.difficulty] ?? 3) - (DIFF_RANK[b.difficulty] ?? 3);
+    });
 
   return (
     <div className="tab-fade-in">
@@ -33,15 +49,21 @@ export function HomeTab({ assignments, onSubmit, onSnooze }) {
             A
           </div>
           <div>
-            <p className="font-bold text-white" style={{ fontSize: '18px' }}>{greeting}, Arjun 👋</p>
-            <p className="text-xs" style={{ color: '#6b7280' }}>{dateStr}</p>
+            <p className="font-bold" style={{ fontSize: '18px', color: 'var(--text-primary)' }}>{greeting}, Arjun 👋</p>
+            <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>{dateStr}</p>
           </div>
         </div>
-        <button className="w-10 h-10 rounded-full flex items-center justify-center relative"
-          style={{ background: 'rgba(255,255,255,0.06)' }}>
-          <Bell size={18} className="text-gray-300" />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-violet-500" />
-        </button>
+        <div className="flex items-center gap-2">
+          <button onClick={onSearch} className="w-10 h-10 rounded-full flex items-center justify-center"
+            style={{ background: 'var(--btn-glass)' }}>
+            <Search size={18} style={{ color: 'var(--text-secondary)' }} />
+          </button>
+          <button className="w-10 h-10 rounded-full flex items-center justify-center relative"
+            style={{ background: 'var(--btn-glass)' }}>
+            <Bell size={18} style={{ color: 'var(--text-secondary)' }} />
+            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-violet-500" />
+          </button>
+        </div>
       </div>
 
       {/* Alert banner */}
@@ -78,31 +100,64 @@ export function HomeTab({ assignments, onSubmit, onSnooze }) {
 
       {/* Heatmap strip */}
       <div className="mx-5 mb-4">
-        <p className="text-sm font-bold text-white mb-3">Your Week at a Glance</p>
-        <div className="rounded-2xl p-4" style={{ background: '#1E1E32' }}>
-          <HeatmapStrip />
+        <p className="text-sm font-bold mb-3" style={{ color: 'var(--text-primary)' }}>Your Week at a Glance</p>
+        <div className="rounded-2xl p-4" style={{ background: 'var(--bg-surface)' }}>
+          <HeatmapStrip assignments={assignments} />
         </div>
       </div>
 
       {/* Upcoming deadlines */}
       <div className="mx-5 mb-4">
-        <div className="flex items-center justify-between mb-3">
-          <p className="text-sm font-bold text-white">Upcoming Deadlines</p>
-          <button className="text-xs font-medium px-3 py-1 rounded-xl"
+        <div className="flex items-center justify-between mb-3 relative">
+          <p className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>Upcoming Deadlines</p>
+          <button
+            onClick={() => setShowSortMenu(!showSortMenu)}
+            className="text-xs font-medium px-3 py-1.5 rounded-xl transition-all active:scale-95 flex items-center gap-1.5"
             style={{ background: 'rgba(108,99,255,0.15)', color: '#6C63FF' }}>
-            Sort by time ↓
+            {currentSort.label} {currentSort.icon}
           </button>
+
+          {/* Sort dropdown */}
+          {showSortMenu && (
+            <>
+              <div className="fixed inset-0 z-30" onClick={() => setShowSortMenu(false)} />
+              <div className="absolute right-0 top-9 z-40 rounded-2xl py-1.5 sort-menu-appear"
+                style={{
+                  background: 'var(--bg-surface)',
+                  border: '1px solid var(--border-focus)',
+                  boxShadow: '0 12px 40px rgba(0,0,0,0.5)',
+                  minWidth: 170,
+                }}>
+                {SORT_MODES.map((mode, i) => (
+                  <button
+                    key={mode.key}
+                    onClick={() => { setSortIdx(i); setShowSortMenu(false); }}
+                    className="w-full flex items-center gap-2.5 px-4 py-2.5 text-left transition-all active:scale-[0.98]"
+                    style={{
+                      background: sortIdx === i ? 'rgba(108,99,255,0.15)' : 'transparent',
+                      color: sortIdx === i ? '#6C63FF' : 'var(--text-secondary)',
+                    }}>
+                    <span className="text-sm">{mode.icon}</span>
+                    <span className="text-xs font-semibold">{mode.label}</span>
+                    {sortIdx === i && (
+                      <span className="ml-auto text-[10px]" style={{ color: '#6C63FF' }}>✓</span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
         </div>
 
         {sorted.length === 0 ? (
           <div className="flex flex-col items-center py-12">
             <span className="text-5xl mb-3">🎉</span>
-            <p className="text-base font-semibold text-white mb-1">Nothing due today. Enjoy the break!</p>
-            <p className="text-xs text-gray-500">Add a task using the + button below</p>
+            <p className="text-base font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>Nothing due today. Enjoy the break!</p>
+            <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>Add a task using the + button below</p>
           </div>
         ) : (
           sorted.map(a => (
-            <TaskCard key={a.id} assignment={a} onSubmit={onSubmit} onSnooze={onSnooze} />
+            <TaskCard key={a.id} assignment={a} onSubmit={onSubmit} onSnooze={onSnooze} onEdit={onEdit} onViewDetail={onViewDetail} />
           ))
         )}
       </div>

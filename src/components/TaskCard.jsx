@@ -36,7 +36,7 @@ function useSwipe(onSwipeRight, onSwipeLeft) {
   return { onTouchStart, onTouchMove, onTouchEnd, swipeDir };
 }
 
-export function TaskCard({ assignment, onSubmit, onSnooze, showProgressBar = true }) {
+export function TaskCard({ assignment, onSubmit, onSnooze, onEdit, onViewDetail, showProgressBar = true }) {
   const [done, setDone] = useState(assignment.submitted);
   const [animating, setAnimating] = useState(false);
   const { subjects } = appData.user;
@@ -44,7 +44,8 @@ export function TaskCard({ assignment, onSubmit, onSnooze, showProgressBar = tru
   const countdown = formatCountdown(assignment.deadline);
   const diff = difficultyConfig[assignment.difficulty];
 
-  const handleSubmit = () => {
+  const handleSubmit = (e) => {
+    e?.stopPropagation();
     if (done) return;
     setAnimating(true);
     setTimeout(() => {
@@ -60,18 +61,18 @@ export function TaskCard({ assignment, onSubmit, onSnooze, showProgressBar = tru
     <div
       className={`relative rounded-2xl mb-3 overflow-hidden transition-all duration-300 ${animating ? 'card-fade-out' : ''} ${swipe.swipeDir === 'right' ? 'swipe-right-hint' : swipe.swipeDir === 'left' ? 'swipe-left-hint' : ''}`}
       style={{
-        background: '#1E1E32',
+        background: 'var(--bg-surface)',
         borderLeft: `4px solid ${subject?.color || '#6C63FF'}`,
         boxShadow: countdown.isOverdue
           ? '0 0 0 1px rgba(239,83,80,0.5), 0 4px 20px rgba(239,83,80,0.1)'
-          : '0 4px 20px rgba(0,0,0,0.3)',
+          : 'var(--shadow-main)',
         opacity: done ? 0.5 : 1,
       }}
       onTouchStart={swipe.onTouchStart}
       onTouchMove={swipe.onTouchMove}
       onTouchEnd={swipe.onTouchEnd}
     >
-      <div className="p-4">
+      <div className="p-4" onClick={() => onViewDetail?.(assignment)} style={{ cursor: 'pointer' }}>
         {/* Top row chips */}
         <div className="flex flex-wrap items-center gap-1.5 mb-2.5">
           {/* Subject chip */}
@@ -89,8 +90,8 @@ export function TaskCard({ assignment, onSubmit, onSnooze, showProgressBar = tru
             {assignment.difficulty}
           </span>
           {/* Added via */}
-          <span className="text-[10px] text-gray-400 px-2 py-0.5 rounded-full"
-            style={{ background: 'rgba(255,255,255,0.06)' }}>
+          <span className="text-[10px] px-2 py-0.5 rounded-full"
+            style={{ background: 'var(--btn-glass)', color: 'var(--text-secondary)' }}>
             {addedViaIcon[assignment.added_via]} {assignment.added_via}
           </span>
           {/* Overdue badge */}
@@ -114,7 +115,7 @@ export function TaskCard({ assignment, onSubmit, onSnooze, showProgressBar = tru
               <span className="w-2 h-2 rounded-full mt-1.5 flex-shrink-0 amber-pulse"
                 style={{ background: '#F9A825', display: 'inline-block' }} />
             )}
-            <h3 className="font-semibold text-white leading-snug" style={{ fontSize: '15px' }}>
+            <h3 className="font-semibold leading-snug" style={{ fontSize: '15px', color: 'var(--text-primary)' }}>
               {assignment.title}
             </h3>
           </div>
@@ -126,7 +127,7 @@ export function TaskCard({ assignment, onSubmit, onSnooze, showProgressBar = tru
             {done ? (
               <CheckCircle2 size={22} className="check-burst" style={{ color: '#43B89C' }} />
             ) : (
-              <Circle size={22} className="text-gray-600" />
+              <Circle size={22} style={{ color: 'var(--text-tertiary)' }} />
             )}
           </button>
         </div>
@@ -134,7 +135,7 @@ export function TaskCard({ assignment, onSubmit, onSnooze, showProgressBar = tru
         {/* Progress bar */}
         {showProgressBar && assignment.progress_percent > 0 && (
           <div className="mt-2.5 mb-1">
-            <div className="w-full h-1 rounded-full" style={{ background: 'rgba(255,255,255,0.08)' }}>
+            <div className="w-full h-1 rounded-full" style={{ background: 'var(--border-light)' }}>
               <div
                 className="h-1 rounded-full progress-animate"
                 style={{
@@ -143,7 +144,7 @@ export function TaskCard({ assignment, onSubmit, onSnooze, showProgressBar = tru
                 }}
               />
             </div>
-            <span className="text-[10px] text-gray-500 mt-0.5 block">{assignment.progress_percent}% done</span>
+            <span className="text-[10px] mt-0.5 block" style={{ color: 'var(--text-tertiary)' }}>{assignment.progress_percent}% done</span>
           </div>
         )}
 

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { formatCountdown } from '../data';
 import { TaskCard } from './TaskCard';
+import { Search } from 'lucide-react';
 
 const FILTERS = ['ALL', 'ACTIVE', 'OVERDUE', 'COMPLETED'];
 
@@ -11,7 +12,7 @@ const emptyStates = {
   ALL: { emoji: '🎉', msg: 'Nothing due. Enjoy the break!' },
 };
 
-export function TasksTab({ assignments, onSubmit, onSnooze }) {
+export function TasksTab({ assignments, onSubmit, onSnooze, onEdit, onViewDetail, onSearch }) {
   const [filter, setFilter] = useState('ALL');
 
   const getFiltered = () => {
@@ -66,8 +67,14 @@ export function TasksTab({ assignments, onSubmit, onSnooze }) {
     <div className="tab-fade-in">
       {/* Filter pills */}
       <div className="sticky top-0 z-10 px-5 pt-5 pb-3"
-        style={{ background: 'rgba(15,15,26,0.95)', backdropFilter: 'blur(12px)' }}>
-        <p className="text-lg font-bold text-white mb-3">Tasks</p>
+        style={{ background: 'var(--bg-glass)', backdropFilter: 'blur(12px)' }}>
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>Tasks</p>
+          <button onClick={onSearch} className="w-9 h-9 rounded-full flex items-center justify-center"
+            style={{ background: 'var(--btn-glass)' }}>
+            <Search size={16} style={{ color: 'var(--text-secondary)' }} />
+          </button>
+        </div>
         <div className="flex gap-2">
           {FILTERS.map(f => (
             <button
@@ -75,8 +82,8 @@ export function TasksTab({ assignments, onSubmit, onSnooze }) {
               onClick={() => setFilter(f)}
               className="flex-1 py-1.5 rounded-xl text-[11px] font-semibold transition-all"
               style={{
-                background: filter === f ? '#6C63FF' : 'rgba(255,255,255,0.06)',
-                color: filter === f ? '#fff' : '#6b7280',
+                background: filter === f ? '#6C63FF' : 'var(--btn-glass)',
+                color: filter === f ? '#fff' : 'var(--text-secondary)',
               }}
             >
               {f}
@@ -89,29 +96,29 @@ export function TasksTab({ assignments, onSubmit, onSnooze }) {
         {filtered.length === 0 ? (
           <div className="flex flex-col items-center py-16">
             <span className="text-5xl mb-3">{empty.emoji}</span>
-            <p className="text-sm font-semibold text-white text-center">{empty.msg}</p>
+            <p className="text-sm font-semibold text-center" style={{ color: 'var(--text-primary)' }}>{empty.msg}</p>
           </div>
         ) : filter === 'ALL' ? (
           <>
             {overdue.length > 0 && (
               <><SectionHeader label="OVERDUE" color="#EF5350" count={overdue.length} />
-                {overdue.map(a => <TaskCard key={a.id} assignment={a} onSubmit={onSubmit} onSnooze={onSnooze} />)}</>
+                {overdue.map(a => <TaskCard key={a.id} assignment={a} onSubmit={onSubmit} onSnooze={onSnooze} onEdit={onEdit} onViewDetail={onViewDetail} />)}</>
             )}
             {allDueToday.length > 0 && (
               <><SectionHeader label="DUE TODAY" color="#F9A825" count={allDueToday.length} />
-                {allDueToday.map(a => <TaskCard key={a.id} assignment={a} onSubmit={onSubmit} onSnooze={onSnooze} />)}</>
+                {allDueToday.map(a => <TaskCard key={a.id} assignment={a} onSubmit={onSubmit} onSnooze={onSnooze} onEdit={onEdit} onViewDetail={onViewDetail} />)}</>
             )}
             {thisWeek.length > 0 && (
-              <><SectionHeader label="THIS WEEK" color="#fff" count={thisWeek.length} />
-                {thisWeek.map(a => <TaskCard key={a.id} assignment={a} onSubmit={onSubmit} onSnooze={onSnooze} />)}</>
+              <><SectionHeader label="THIS WEEK" color="var(--text-primary)" count={thisWeek.length} />
+                {thisWeek.map(a => <TaskCard key={a.id} assignment={a} onSubmit={onSubmit} onSnooze={onSnooze} onEdit={onEdit} onViewDetail={onViewDetail} />)}</>
             )}
             {completed.length > 0 && (
               <><SectionHeader label="COMPLETED" color="#43B89C" count={completed.length} />
-                {completed.map(a => <TaskCard key={a.id} assignment={a} onSubmit={onSubmit} onSnooze={onSnooze} />)}</>
+                {completed.map(a => <TaskCard key={a.id} assignment={a} onSubmit={onSubmit} onSnooze={onSnooze} onEdit={onEdit} onViewDetail={onViewDetail} />)}</>
             )}
           </>
         ) : (
-          filtered.map(a => <TaskCard key={a.id} assignment={a} onSubmit={onSubmit} onSnooze={onSnooze} />)
+          filtered.map(a => <TaskCard key={a.id} assignment={a} onSubmit={onSubmit} onSnooze={onSnooze} onEdit={onEdit} onViewDetail={onViewDetail} />)
         )}
       </div>
     </div>

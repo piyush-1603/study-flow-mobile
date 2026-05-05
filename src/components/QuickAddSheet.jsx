@@ -1,17 +1,27 @@
 import { useState, useEffect } from 'react';
 import { appData } from '../data';
-import { X, Plus, Calendar, ChevronDown } from 'lucide-react';
+import { X, Plus, Calendar, ChevronDown, Trash2 } from 'lucide-react';
 
 const SUBJECTS = appData.user.subjects;
 
-export function QuickAddSheet({ onClose, onAdd }) {
-  const [title, setTitle] = useState('');
-  const [selectedSubject, setSelectedSubject] = useState(SUBJECTS[0].id);
-  const [deadline, setDeadline] = useState('');
-  const [deadlineTime, setDeadlineTime] = useState('');
-  const [difficulty, setDifficulty] = useState('Medium');
-  const [notes, setNotes] = useState('');
+export function QuickAddSheet({ onClose, onAdd, editTask, onSave, onDelete }) {
+  const isEditing = !!editTask;
+
+  const [title, setTitle] = useState(isEditing ? editTask.title : '');
+  const [selectedSubject, setSelectedSubject] = useState(isEditing ? editTask.subject_id : SUBJECTS[0].id);
+  const [deadline, setDeadline] = useState(isEditing ? editTask.deadline.split('T')[0] : '');
+  const [deadlineTime, setDeadlineTime] = useState(() => {
+    if (isEditing) {
+      const timePart = editTask.deadline.split('T')[1];
+      return timePart ? timePart.slice(0, 5) : '';
+    }
+    return '';
+  });
+  const [difficulty, setDifficulty] = useState(isEditing ? editTask.difficulty : 'Medium');
+  const [notes, setNotes] = useState(isEditing ? (editTask.notes || '') : '');
+  const [progress, setProgress] = useState(isEditing ? editTask.progress_percent : 0);
   const [warn6h, setWarn6h] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const todayStr = new Date().toISOString().split('T')[0];
 
@@ -23,28 +33,49 @@ export function QuickAddSheet({ onClose, onAdd }) {
     } else setWarn6h(false);
   }, [deadline, deadlineTime]);
 
-  const handleAdd = () => {
+  const handleSubmit = () => {
     if (!title.trim() || !deadline || !deadlineTime) return;
-    const newTask = {
-      id: `a${Date.now()}`,
-      title: title.trim(),
-      subject_id: selectedSubject,
-      description: notes,
-      difficulty,
-      deadline: `${deadline}T${deadlineTime}`,
-      added_via: 'WhatsApp',
-      status: 'not_started',
-      progress_percent: 0,
-      submitted: false,
-      tags: [],
-      notes,
-    };
-    onAdd?.(newTask);
+
+    if (isEditing) {
+      onSave?.({
+        ...editTask,
+        title: title.trim(),
+        subject_id: selectedSubject,
+        difficulty,
+        deadline: `${deadline}T${deadlineTime}:00`,
+        notes,
+        description: notes,
+        progress_percent: progress,
+        status: progress > 0 ? 'in_progress' : 'not_started',
+      });
+    } else {
+      const newTask = {
+        id: `a${Date.now()}`,
+        title: title.trim(),
+        subject_id: selectedSubject,
+        description: notes,
+        difficulty,
+        deadline: `${deadline}T${deadlineTime}`,
+        added_via: 'WhatsApp',
+        status: 'not_started',
+        progress_percent: 0,
+        submitted: false,
+        tags: [],
+        notes,
+      };
+      onAdd?.(newTask);
+    }
+    onClose?.();
+  };
+
+  const handleDelete = () => {
+    onDelete?.(editTask.id);
     onClose?.();
   };
 
   const diffs = ['Easy', 'Medium', 'Hard'];
   const diffColors = { Easy: '#43B89C', Medium: '#F9A825', Hard: '#EF5350' };
+  const progressSteps = [0, 25, 50, 75, 100];
 
   return (
     <>
@@ -52,36 +83,38 @@ export function QuickAddSheet({ onClose, onAdd }) {
       <div className="fixed inset-0 overlay z-40" onClick={onClose} />
       {/* Sheet */}
       <div className="fixed bottom-0 left-0 right-0 w-full z-50 sheet-slide-up"
-        style={{ background: '#1A1A2E', borderRadius: '24px 24px 0 0', border: '1px solid rgba(108,99,255,0.2)' }}>
+        style={{ background: 'var(--bg-surface)', borderRadius: '24px 24px 0 0', border: '1px solid var(--border-focus)' }}>
         {/* Handle */}
         <div className="flex justify-center pt-3 pb-1">
-          <div className="w-10 h-1 rounded-full" style={{ background: 'rgba(255,255,255,0.15)' }} />
+          <div className="w-10 h-1 rounded-full" style={{ background: 'var(--border-medium)' }} />
         </div>
         <div className="flex items-center justify-between px-5 pb-3">
-          <h2 className="text-lg font-bold text-white">Add Deadline</h2>
+          <h2 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
+            {isEditing ? 'Edit Task' : 'Add Deadline'}
+          </h2>
           <button onClick={onClose} className="w-8 h-8 rounded-full flex items-center justify-center"
-            style={{ background: 'rgba(255,255,255,0.08)' }}>
-            <X size={16} className="text-gray-300" />
+            style={{ background: 'var(--btn-glass)' }}>
+            <X size={16} style={{ color: 'var(--text-secondary)' }} />
           </button>
         </div>
 
         <div className="px-5 pb-6 overflow-y-auto" style={{ maxHeight: '75vh' }}>
           {/* Title */}
           <div className="mb-4">
-            <label className="text-xs text-gray-400 font-medium mb-1.5 block">Task Title *</label>
+            <label className="text-xs font-medium mb-1.5 block" style={{ color: 'var(--text-secondary)' }}>Task Title *</label>
             <input
               autoFocus
               value={title}
               onChange={e => setTitle(e.target.value)}
               placeholder="e.g. Machine Learning Assignment"
-              className="w-full px-4 py-3 rounded-2xl text-sm text-white placeholder-gray-500 input-focus"
-              style={{ background: '#0F0F1A', border: '1px solid rgba(255,255,255,0.1)' }}
+              className="w-full px-4 py-3 rounded-2xl text-sm placeholder-gray-500 input-focus"
+              style={{ background: 'var(--bg-main)', border: '1px solid var(--border-medium)', color: 'var(--text-primary)' }}
             />
           </div>
 
           {/* Subject */}
           <div className="mb-4">
-            <label className="text-xs text-gray-400 font-medium mb-1.5 block">Subject</label>
+            <label className="text-xs font-medium mb-1.5 block" style={{ color: 'var(--text-secondary)' }}>Subject</label>
             <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
               {SUBJECTS.map(s => (
                 <button
@@ -103,24 +136,24 @@ export function QuickAddSheet({ onClose, onAdd }) {
           {/* Deadline date + time */}
           <div className="mb-4 flex gap-3">
             <div className="flex-1">
-              <label className="text-xs text-gray-400 font-medium mb-1.5 block">Date *</label>
+              <label className="text-xs font-medium mb-1.5 block" style={{ color: 'var(--text-secondary)' }}>Date *</label>
               <input
                 type="date"
                 min={todayStr}
                 value={deadline}
                 onChange={e => setDeadline(e.target.value)}
-                className="w-full px-3 py-2.5 rounded-2xl text-sm text-white input-focus"
-                style={{ background: '#0F0F1A', border: '1px solid rgba(255,255,255,0.1)', colorScheme: 'dark' }}
+                className="w-full px-3 py-2.5 rounded-2xl text-sm input-focus"
+                style={{ background: 'var(--bg-main)', border: '1px solid var(--border-medium)', color: 'var(--text-primary)', colorScheme: 'dark' }}
               />
             </div>
             <div className="flex-1">
-              <label className="text-xs text-gray-400 font-medium mb-1.5 block">Time *</label>
+              <label className="text-xs font-medium mb-1.5 block" style={{ color: 'var(--text-secondary)' }}>Time *</label>
               <input
                 type="time"
                 value={deadlineTime}
                 onChange={e => setDeadlineTime(e.target.value)}
-                className="w-full px-3 py-2.5 rounded-2xl text-sm text-white input-focus"
-                style={{ background: '#0F0F1A', border: '1px solid rgba(255,255,255,0.1)', colorScheme: 'dark' }}
+                className="w-full px-3 py-2.5 rounded-2xl text-sm input-focus"
+                style={{ background: 'var(--bg-main)', border: '1px solid var(--border-medium)', color: 'var(--text-primary)', colorScheme: 'dark' }}
               />
             </div>
           </div>
@@ -135,7 +168,7 @@ export function QuickAddSheet({ onClose, onAdd }) {
 
           {/* Difficulty */}
           <div className="mb-4">
-            <label className="text-xs text-gray-400 font-medium mb-1.5 block">Difficulty</label>
+            <label className="text-xs font-medium mb-1.5 block" style={{ color: 'var(--text-secondary)' }}>Difficulty</label>
             <div className="flex gap-2">
               {diffs.map(d => (
                 <button
@@ -143,8 +176,8 @@ export function QuickAddSheet({ onClose, onAdd }) {
                   onClick={() => setDifficulty(d)}
                   className="flex-1 py-2 rounded-xl text-xs font-semibold transition-all"
                   style={{
-                    background: difficulty === d ? `${diffColors[d]}33` : 'rgba(255,255,255,0.05)',
-                    color: difficulty === d ? diffColors[d] : '#6b7280',
+                    background: difficulty === d ? `${diffColors[d]}33` : 'var(--btn-glass)',
+                    color: difficulty === d ? diffColors[d] : 'var(--text-secondary)',
                     border: `1px solid ${difficulty === d ? diffColors[d] + '66' : 'transparent'}`,
                   }}
                 >
@@ -154,28 +187,92 @@ export function QuickAddSheet({ onClose, onAdd }) {
             </div>
           </div>
 
+          {/* Progress (only in edit mode) */}
+          {isEditing && (
+            <div className="mb-4">
+              <label className="text-xs font-medium mb-1.5 block" style={{ color: 'var(--text-secondary)' }}>
+                Progress — {progress}%
+              </label>
+              <div className="flex gap-2">
+                {progressSteps.map(p => (
+                  <button
+                    key={p}
+                    onClick={() => setProgress(p)}
+                    className="flex-1 py-2 rounded-xl text-xs font-semibold transition-all"
+                    style={{
+                      background: progress === p ? 'rgba(108,99,255,0.3)' : 'var(--btn-glass)',
+                      color: progress === p ? '#6C63FF' : 'var(--text-secondary)',
+                      border: `1px solid ${progress === p ? 'rgba(108,99,255,0.5)' : 'transparent'}`,
+                    }}
+                  >
+                    {p}%
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Notes */}
-          <div className="mb-6">
-            <label className="text-xs text-gray-400 font-medium mb-1.5 block">Notes (optional)</label>
+          <div className="mb-5">
+            <label className="text-xs font-medium mb-1.5 block" style={{ color: 'var(--text-secondary)' }}>Notes (optional)</label>
             <textarea
               value={notes}
               onChange={e => setNotes(e.target.value)}
               placeholder="Any extra details..."
               rows={2}
-              className="w-full px-4 py-3 rounded-2xl text-sm text-white placeholder-gray-500 input-focus resize-none"
-              style={{ background: '#0F0F1A', border: '1px solid rgba(255,255,255,0.1)' }}
+              className="w-full px-4 py-3 rounded-2xl text-sm placeholder-gray-500 input-focus resize-none"
+              style={{ background: 'var(--bg-main)', border: '1px solid var(--border-medium)', color: 'var(--text-primary)' }}
             />
           </div>
 
           {/* CTA */}
           <button
-            onClick={handleAdd}
+            onClick={handleSubmit}
             disabled={!title.trim() || !deadline || !deadlineTime}
             className="w-full py-4 rounded-2xl font-bold text-white text-sm transition-all active:scale-95 disabled:opacity-40"
             style={{ background: 'linear-gradient(135deg, #6C63FF, #8B5CF6)' }}
           >
-            Add Task
+            {isEditing ? 'Save Changes' : 'Add Task'}
           </button>
+
+          {/* Delete button (edit mode only) */}
+          {isEditing && (
+            <>
+              {!showDeleteConfirm ? (
+                <button
+                  onClick={() => setShowDeleteConfirm(true)}
+                  className="w-full py-3.5 rounded-2xl font-semibold text-sm mt-3 transition-all active:scale-95 flex items-center justify-center gap-2"
+                  style={{ border: '1px solid rgba(239,83,80,0.3)', color: '#EF5350', background: 'rgba(239,83,80,0.06)' }}
+                >
+                  <Trash2 size={14} />
+                  Delete Task
+                </button>
+              ) : (
+                <div className="mt-3 rounded-2xl p-4"
+                  style={{ background: 'rgba(239,83,80,0.08)', border: '1px solid rgba(239,83,80,0.3)' }}>
+                  <p className="text-xs text-red-400 font-medium mb-3 text-center">
+                    Delete "{editTask.title}"?
+                  </p>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setShowDeleteConfirm(false)}
+                      className="flex-1 py-2.5 rounded-xl text-xs font-semibold transition-all active:scale-95"
+                      style={{ background: 'var(--btn-glass)', color: 'var(--text-secondary)' }}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleDelete}
+                      className="flex-1 py-2.5 rounded-xl text-xs font-bold transition-all active:scale-95"
+                      style={{ background: 'rgba(239,83,80,0.25)', color: '#EF5350' }}
+                    >
+                      Confirm Delete
+                    </button>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
         </div>
       </div>
     </>
