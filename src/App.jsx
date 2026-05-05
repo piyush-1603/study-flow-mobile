@@ -102,8 +102,70 @@ export default function App() {
     });
   };
 
-  if (!loggedIn) return <LoginPage onLogin={() => setLoggedIn(true)} />;
-  if (!onboarded) return <Onboarding onDone={() => setOnboarded(true)} />;
+  const renderContent = () => {
+    if (!loggedIn) return <LoginPage onLogin={() => setLoggedIn(true)} />;
+    if (!onboarded) return <Onboarding onDone={() => setOnboarded(true)} />;
+    
+    return (
+      <>
+        {/* Scrollable content */}
+        <div className="scroll-area">
+          {activeTab === 'home' && <HomeTab {...tabProps} />}
+          {activeTab === 'tasks' && <TasksTab {...tabProps} />}
+          {activeTab === 'planner' && <AIStudyPlanner {...tabProps} />}
+          {activeTab === 'calendar' && <CalendarTab {...tabProps} />}
+          {activeTab === 'profile' && <ProfileTab {...tabProps} />}
+        </div>
+
+        {/* FAB */}
+        <button
+          onClick={() => setShowSheet(true)}
+          className="fixed z-30 w-14 h-14 rounded-full flex items-center justify-center shadow-2xl transition-all active:scale-90"
+          style={{
+            bottom: 84,
+            right: 20,
+            background: 'linear-gradient(135deg, #6C63FF, #8B5CF6)',
+            boxShadow: '0 4px 24px rgba(108,99,255,0.5)',
+          }}
+        >
+          <Plus size={26} className="text-white" strokeWidth={2.5} />
+        </button>
+
+        {/* Bottom Nav */}
+        <nav className="fixed bottom-0 left-0 right-0 w-full z-20 bottom-nav-glass">
+          <div className="flex items-center justify-around px-2 pt-2 pb-safe" style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}>
+            {NAV_ITEMS.map(({ id, label, Icon }) => {
+              const active = activeTab === id;
+              return (
+                <button
+                  key={id}
+                  onClick={() => setActiveTab(id)}
+                  className="flex flex-col items-center gap-1 flex-1 py-1 transition-all"
+                >
+                  <div className="relative">
+                    <Icon
+                      size={22}
+                      strokeWidth={active ? 2.5 : 1.8}
+                      style={{ color: active ? '#6C63FF' : 'var(--text-secondary)' }}
+                    />
+                    {id === 'home' && appData.alerts.length > 0 && (
+                      <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-violet-500 shadow-[0_0_0_2px_var(--bg-surface)] transition-colors" />
+                    )}
+                  </div>
+                  <span
+                    className="text-[10px] font-semibold transition-colors"
+                    style={{ color: active ? '#6C63FF' : 'var(--text-tertiary)' }}
+                  >
+                    {label}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </nav>
+      </>
+    );
+  };
 
   const tabProps = {
     assignments,
@@ -118,61 +180,7 @@ export default function App() {
 
   return (
     <div className="app-shell">
-      {/* Scrollable content */}
-      <div className="scroll-area">
-        {activeTab === 'home' && <HomeTab {...tabProps} />}
-        {activeTab === 'tasks' && <TasksTab {...tabProps} />}
-        {activeTab === 'planner' && <AIStudyPlanner {...tabProps} />}
-        {activeTab === 'calendar' && <CalendarTab {...tabProps} />}
-        {activeTab === 'profile' && <ProfileTab {...tabProps} />}
-      </div>
-
-      {/* FAB */}
-      <button
-        onClick={() => setShowSheet(true)}
-        className="fixed z-30 w-14 h-14 rounded-full flex items-center justify-center shadow-2xl transition-all active:scale-90"
-        style={{
-          bottom: 84,
-          right: 20,
-          background: 'linear-gradient(135deg, #6C63FF, #8B5CF6)',
-          boxShadow: '0 4px 24px rgba(108,99,255,0.5)',
-        }}
-      >
-        <Plus size={26} className="text-white" strokeWidth={2.5} />
-      </button>
-
-      {/* Bottom Nav */}
-      <nav className="fixed bottom-0 left-0 right-0 w-full z-20 bottom-nav-glass">
-        <div className="flex items-center justify-around px-2 pt-2 pb-safe" style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}>
-          {NAV_ITEMS.map(({ id, label, Icon }) => {
-            const active = activeTab === id;
-            return (
-              <button
-                key={id}
-                onClick={() => setActiveTab(id)}
-                className="flex flex-col items-center gap-1 flex-1 py-1 transition-all"
-              >
-                <div className="relative">
-                  <Icon
-                    size={22}
-                    strokeWidth={active ? 2.5 : 1.8}
-                    style={{ color: active ? '#6C63FF' : 'var(--text-secondary)' }}
-                  />
-                </div>
-                <span
-                  className="text-[10px] font-semibold"
-                  style={{ color: active ? '#6C63FF' : 'var(--text-secondary)' }}
-                >
-                  {label}
-                </span>
-                {active && (
-                  <div className="w-1 h-1 rounded-full" style={{ background: '#6C63FF' }} />
-                )}
-              </button>
-            );
-          })}
-        </div>
-      </nav>
+      {renderContent()}
 
       {/* Quick Add Sheet */}
       {showSheet && (
