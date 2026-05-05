@@ -18,6 +18,7 @@ export function QuickAddSheet({ onClose, onAdd, editTask, onSave, onDelete }) {
     return '';
   });
   const [difficulty, setDifficulty] = useState(isEditing ? editTask.difficulty : 'Medium');
+  const [reminder, setReminder] = useState(isEditing ? (editTask.reminder || '1 Day') : '1 Day');
   const [notes, setNotes] = useState(isEditing ? (editTask.notes || '') : '');
   const [progress, setProgress] = useState(isEditing ? editTask.progress_percent : 0);
   const [warn6h, setWarn6h] = useState(false);
@@ -42,6 +43,7 @@ export function QuickAddSheet({ onClose, onAdd, editTask, onSave, onDelete }) {
         title: title.trim(),
         subject_id: selectedSubject,
         difficulty,
+        reminder,
         deadline: `${deadline}T${deadlineTime}:00`,
         notes,
         description: notes,
@@ -55,6 +57,7 @@ export function QuickAddSheet({ onClose, onAdd, editTask, onSave, onDelete }) {
         subject_id: selectedSubject,
         description: notes,
         difficulty,
+        reminder,
         deadline: `${deadline}T${deadlineTime}`,
         added_via: 'WhatsApp',
         status: 'not_started',
@@ -75,6 +78,7 @@ export function QuickAddSheet({ onClose, onAdd, editTask, onSave, onDelete }) {
 
   const diffs = ['Easy', 'Medium', 'Hard'];
   const diffColors = { Easy: '#43B89C', Medium: '#F9A825', Hard: '#EF5350' };
+  const reminderOpts = ['1 Day', '3 Days', '1 Week'];
   const progressSteps = [0, 25, 50, 75, 100];
 
   return (
@@ -182,6 +186,27 @@ export function QuickAddSheet({ onClose, onAdd, editTask, onSave, onDelete }) {
                   }}
                 >
                   {d}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Reminder / Notification */}
+          <div className="mb-4">
+            <label className="text-xs font-medium mb-1.5 block" style={{ color: 'var(--text-secondary)' }}>Reminder Notification</label>
+            <div className="flex gap-2">
+              {reminderOpts.map(r => (
+                <button
+                  key={r}
+                  onClick={() => setReminder(r)}
+                  className="flex-1 py-2 rounded-xl text-xs font-semibold transition-all"
+                  style={{
+                    background: reminder === r ? 'rgba(108,99,255,0.15)' : 'var(--btn-glass)',
+                    color: reminder === r ? '#6C63FF' : 'var(--text-secondary)',
+                    border: `1px solid ${reminder === r ? 'rgba(108,99,255,0.4)' : 'transparent'}`,
+                  }}
+                >
+                  {`🔔 ${r} before`}
                 </button>
               ))}
             </div>

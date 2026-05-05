@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { appData, getSubject, formatCountdown, difficultyConfig, addedViaIcon } from '../data';
 import {
   X, Clock, Edit3, CheckCircle2, AlarmClock, Trash2,
-  FileText, Tag, Paperclip, BarChart3, StickyNote
+  FileText, Tag, Paperclip, BarChart3, StickyNote, Bell
 } from 'lucide-react';
 
 export function TaskDetailSheet({ assignment, onClose, onSubmit, onSnooze, onEdit, onDelete }) {
@@ -89,6 +89,19 @@ export function TaskDetailSheet({ assignment, onClose, onSubmit, onSnooze, onEdi
               </p>
             </div>
           </div>
+
+          {/* Reminder */}
+          {assignment.reminder && assignment.reminder !== 'None' && (
+            <div className="flex items-center gap-3 mb-5 px-3 py-2.5 rounded-xl border border-dashed" style={{ borderColor: 'var(--border-medium)', background: 'var(--btn-glass)' }}>
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-violet-500/10">
+                <Bell size={14} className="text-violet-500" />
+              </div>
+              <div>
+                <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>Reminder Set</p>
+                <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{assignment.reminder} before deadline</p>
+              </div>
+            </div>
+          )}
 
           {/* Description */}
           <div className="mb-4">

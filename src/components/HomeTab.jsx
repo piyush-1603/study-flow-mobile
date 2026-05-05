@@ -16,7 +16,9 @@ export function HomeTab({ assignments, onSubmit, onSnooze, onEdit, onViewDetail,
   const [alertDismissed, setAlertDismissed] = useState(false);
   const [sortIdx, setSortIdx] = useState(0);
   const [showSortMenu, setShowSortMenu] = useState(false);
+  const [showNotifs, setShowNotifs] = useState(false);
   const highAlerts = appData.alerts.filter(a => a.severity === 'high' && !alertDismissed);
+  const allAlerts = appData.alerts;
   const { subjects } = appData.user;
   const { today_focus } = appData;
 
@@ -58,11 +60,54 @@ export function HomeTab({ assignments, onSubmit, onSnooze, onEdit, onViewDetail,
             style={{ background: 'var(--btn-glass)' }}>
             <Search size={18} style={{ color: 'var(--text-secondary)' }} />
           </button>
-          <button className="w-10 h-10 rounded-full flex items-center justify-center relative"
-            style={{ background: 'var(--btn-glass)' }}>
-            <Bell size={18} style={{ color: 'var(--text-secondary)' }} />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-violet-500" />
-          </button>
+          <div className="relative">
+            <button onClick={() => setShowNotifs(!showNotifs)} className="w-10 h-10 rounded-full flex items-center justify-center relative"
+              style={{ background: 'var(--btn-glass)' }}>
+              <Bell size={18} style={{ color: 'var(--text-secondary)' }} />
+              {allAlerts.length > 0 && (
+                <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-sm"
+                  style={{ background: '#EF5350', padding: '0 4px' }}>
+                  {allAlerts.length}
+                </span>
+              )}
+            </button>
+            
+            {showNotifs && (
+              <>
+                <div className="fixed inset-0 z-30" onClick={() => setShowNotifs(false)} />
+                <div className="absolute right-0 top-12 z-40 rounded-2xl w-72 overflow-hidden sort-menu-appear"
+                  style={{
+                    background: 'var(--bg-surface)',
+                    border: '1px solid var(--border-focus)',
+                    boxShadow: '0 12px 40px rgba(0,0,0,0.5)',
+                  }}>
+                  <div className="px-4 py-3 border-b" style={{ borderColor: 'var(--border-medium)' }}>
+                    <p className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>Notifications</p>
+                  </div>
+                  <div className="max-h-64 overflow-y-auto">
+                    {allAlerts.length > 0 ? (
+                      allAlerts.map((alert, i) => (
+                        <div key={i} className="px-4 py-3 border-b last:border-0" style={{ borderColor: 'var(--border-light)' }}>
+                          <div className="flex items-start gap-3">
+                            <div className="mt-0.5 text-base">{alert.severity === 'high' ? '🚨' : '🔔'}</div>
+                            <div>
+                              <p className="text-xs font-medium leading-relaxed" style={{ color: 'var(--text-primary)' }}>
+                                {alert.message}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="px-4 py-6 text-center">
+                        <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>No new notifications!</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
 
