@@ -26,9 +26,9 @@ export function ProfileTab({ assignments, theme, setTheme }) {
   return (
     <div className="tab-fade-in px-5 pt-5 pb-6">
       <div className="flex flex-col items-center mb-6">
-        <div className="w-20 h-20 rounded-full flex items-center justify-center font-bold text-3xl text-white mb-3"
+        <div className="w-20 h-20 rounded-full flex items-center justify-center font-bold text-3xl text-white mb-3 uppercase"
           style={{ background: 'linear-gradient(135deg, #6C63FF, #FF6584)' }}>
-          A
+          {user.name.charAt(0)}
         </div>
         <p className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>{user.name}</p>
         <p className="text-sm mt-0.5" style={{ color: 'var(--text-secondary)' }}>{user.grade}</p>

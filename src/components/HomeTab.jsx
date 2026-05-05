@@ -19,7 +19,7 @@ export function HomeTab({ assignments, onSubmit, onSnooze, onEdit, onViewDetail,
   const [showNotifs, setShowNotifs] = useState(false);
   const highAlerts = appData.alerts.filter(a => a.severity === 'high' && !alertDismissed);
   const allAlerts = appData.alerts;
-  const { subjects } = appData.user;
+  const { subjects, name } = appData.user;
   const { today_focus } = appData;
 
   const todayDate = new Date();
@@ -46,12 +46,12 @@ export function HomeTab({ assignments, onSubmit, onSnooze, onEdit, onViewDetail,
       {/* Top bar */}
       <div className="flex items-center justify-between px-5 pt-5 pb-4">
         <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-full flex items-center justify-center font-bold text-lg text-white"
+          <div className="w-11 h-11 rounded-full flex items-center justify-center font-bold text-lg text-white uppercase"
             style={{ background: 'linear-gradient(135deg, #6C63FF, #FF6584)' }}>
-            A
+            {name.charAt(0)}
           </div>
           <div>
-            <p className="font-bold" style={{ fontSize: '18px', color: 'var(--text-primary)' }}>{greeting}, Arjun 👋</p>
+            <p className="font-bold" style={{ fontSize: '18px', color: 'var(--text-primary)' }}>{greeting}, {name.split(' ')[0]} 👋</p>
             <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>{dateStr}</p>
           </div>
         </div>

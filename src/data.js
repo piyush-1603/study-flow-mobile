@@ -1,6 +1,6 @@
 export const appData = {
   user: {
-    name: "Arjun Sharma",
+    name: "Piyush",
     grade: "2nd Year B.Tech",
     subjects: [
       { id: "s1", name: "Data Structures", color: "#6C63FF" },
