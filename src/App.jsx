@@ -105,7 +105,7 @@ export default function App() {
   const renderContent = () => {
     if (!loggedIn) return <LoginPage onLogin={() => setLoggedIn(true)} />;
     if (!onboarded) return <Onboarding onDone={() => setOnboarded(true)} />;
-    
+
     return (
       <>
         {/* Scrollable content */}

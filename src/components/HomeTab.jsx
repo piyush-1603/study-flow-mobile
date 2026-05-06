@@ -5,9 +5,9 @@ import { TaskCard } from './TaskCard';
 import { HeatmapStrip } from './HeatmapStrip';
 
 const SORT_MODES = [
-  { key: 'time-asc',  label: 'Earliest first', icon: '↑' },
-  { key: 'time-desc', label: 'Latest first',   icon: '↓' },
-  { key: 'difficulty', label: 'Difficulty',     icon: '◆' },
+  { key: 'time-asc', label: 'Earliest first', icon: '↑' },
+  { key: 'time-desc', label: 'Latest first', icon: '↓' },
+  { key: 'difficulty', label: 'Difficulty', icon: '◆' },
 ];
 
 const DIFF_RANK = { Hard: 0, Medium: 1, Easy: 2 };
@@ -71,7 +71,7 @@ export function HomeTab({ assignments, onSubmit, onSnooze, onEdit, onViewDetail,
                 </span>
               )}
             </button>
-            
+
             {showNotifs && (
               <>
                 <div className="fixed inset-0 z-30" onClick={() => setShowNotifs(false)} />
