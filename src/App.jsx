@@ -44,7 +44,7 @@ export default function App() {
   const [editingTask, setEditingTask] = useState(null);
   const [viewingTask, setViewingTask] = useState(null);
   const [showSearch, setShowSearch] = useState(false);
-  const [theme, setTheme] = useState(() => localStorage.getItem('studyflow_theme') || 'dark');
+  const [theme, setTheme] = useState(() => localStorage.getItem('studyflow_theme') || 'light');
   const [snackbar, setSnackbar] = useState(null);
   const [snackTimer, setSnackTimer] = useState(null);
 
