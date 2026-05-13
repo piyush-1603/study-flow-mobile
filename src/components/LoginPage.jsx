@@ -38,7 +38,7 @@ export function LoginPage({ onLogin }) {
             }}>
             <BookOpen size={30} className="text-white" strokeWidth={2} />
           </div>
-          <h1 className="text-3xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>StudyFlow</h1>
+          <h1 className="ui-display text-3xl font-extrabold tracking-tight" style={{ color: 'var(--text-primary)' }}>Study Flow</h1>
           <p className="text-sm mt-1.5" style={{ color: 'var(--text-secondary)' }}>
             Your smart academic companion
           </p>
@@ -46,14 +46,11 @@ export function LoginPage({ onLogin }) {
 
         {/* Login Card */}
         <form onSubmit={handleLogin} className="login-slide-up">
-          <div className="rounded-3xl p-6"
+          <div className="rounded-3xl p-6 glass"
             style={{
-              background: 'var(--bg-overlay)',
-              border: '1px solid var(--border-medium)',
-              backdropFilter: 'blur(16px)',
-              WebkitBackdropFilter: 'blur(16px)',
-              boxShadow: 'var(--shadow-main)',
-            }}>
+              boxShadow: 'var(--shadow-elevated)',
+            }}
+          >
 
             <p className="text-lg font-bold mb-1" style={{ color: 'var(--text-primary)' }}>Welcome back 👋</p>
             <p className="text-xs mb-6" style={{ color: 'var(--text-secondary)' }}>
@@ -154,7 +151,7 @@ export function LoginPage({ onLogin }) {
 
         {/* Footer */}
         <p className="text-center text-[10px] mt-8 login-fade-in-delayed" style={{ color: 'var(--text-tertiary)' }}>
-          StudyFlow v1.0 · Built for students, by students
+          Study Flow v1.0 · Built for students, by students
         </p>
       </div>
     </div>

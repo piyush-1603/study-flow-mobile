@@ -5,7 +5,7 @@ const slides = [
   {
     emoji: '📚',
     title: 'Add your subjects',
-    desc: 'Set up your courses and subjects. DeadlineOS uses them to color-code and organize all your tasks automatically.',
+    desc: 'Set up your courses and subjects. Study Flow uses them to color-code and organize all your tasks automatically.',
   },
   {
     emoji: '⏰',
@@ -15,7 +15,7 @@ const slides = [
   {
     emoji: '🔔',
     title: 'Turn on reminders',
-    desc: 'Never miss a deadline again. Enable smart notifications and let DeadlineOS keep you on track every day.',
+    desc: 'Never miss a deadline again. Enable smart notifications and let Study Flow keep you on track every day.',
     isFinal: true,
   },
 ];
@@ -45,7 +45,7 @@ export function Onboarding({ onDone }) {
 
         {/* Content */}
         <div className="text-center onboard-slide" key={`content-${current}`}>
-          <h2 className="text-2xl font-bold mb-3" style={{ color: 'var(--text-primary)' }}>{slide.title}</h2>
+          <h2 className="ui-display text-2xl font-bold mb-3" style={{ color: 'var(--text-primary)' }}>{slide.title}</h2>
           <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{slide.desc}</p>
         </div>
 

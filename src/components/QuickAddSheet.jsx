@@ -86,8 +86,16 @@ export function QuickAddSheet({ onClose, onAdd, editTask, onSave, onDelete }) {
       {/* Overlay */}
       <div className="fixed inset-0 overlay z-40" onClick={onClose} />
       {/* Sheet */}
-      <div className="fixed bottom-0 left-0 right-0 w-full z-50 sheet-slide-up"
-        style={{ background: 'var(--bg-surface)', borderRadius: '24px 24px 0 0', border: '1px solid var(--border-focus)' }}>
+      <div
+        className="fixed bottom-0 left-0 right-0 w-full z-50 sheet-slide-up max-w-[430px] mx-auto"
+        style={{
+          background: 'var(--bg-surface)',
+          borderRadius: 'var(--radius-xl) var(--radius-xl) 0 0',
+          border: '1px solid var(--border-light)',
+          borderBottom: 'none',
+          boxShadow: 'var(--shadow-elevated)',
+        }}
+      >
         {/* Handle */}
         <div className="flex justify-center pt-3 pb-1">
           <div className="w-10 h-1 rounded-full" style={{ background: 'var(--border-medium)' }} />

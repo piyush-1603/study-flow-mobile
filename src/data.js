@@ -1,4 +1,4 @@
-export const appData = {
+const rawAppData = {
   user: {
     name: "Piyush",
     grade: "2nd Year B.Tech",
@@ -124,6 +124,99 @@ export const appData = {
   },
 };
 
+function addDays(date, days) {
+  const next = new Date(date);
+  next.setDate(next.getDate() + days);
+  return next;
+}
+
+function formatLocalDate(date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+function startOfWeekMonday(date) {
+  const start = new Date(date);
+  const day = start.getDay();
+  const diff = day === 0 ? -6 : 1 - day;
+  start.setDate(start.getDate() + diff);
+  start.setHours(0, 0, 0, 0);
+  return start;
+}
+
+function daysBetween(left, right) {
+  return Math.round((left - right) / 86400000);
+}
+
+function remapDeadlineToTwoWeeks(isoDateTime, minDate, maxDate, windowStart) {
+  const [datePart, timePart = "00:00:00"] = isoDateTime.split("T");
+  const currentDate = new Date(`${datePart}T00:00:00`);
+  const totalSpan = Math.max(1, daysBetween(maxDate, minDate));
+  const relativeOffset = daysBetween(currentDate, minDate);
+  const mappedOffset = Math.round((relativeOffset / totalSpan) * 13);
+  const clampedOffset = Math.min(13, Math.max(0, mappedOffset));
+  const remappedDate = addDays(windowStart, clampedOffset);
+  return `${formatLocalDate(remappedDate)}T${timePart}`;
+}
+
+function buildClusteringAlertMessage(assignments, affectedIds) {
+  const affectedDeadlines = assignments
+    .filter((a) => affectedIds.includes(a.id))
+    .map((a) => new Date(a.deadline))
+    .sort((a, b) => a - b);
+
+  if (affectedDeadlines.length === 0) {
+    return "Multiple deadlines are clustered. High risk period! 🚨";
+  }
+
+  const monthName = affectedDeadlines[0].toLocaleString("en-US", { month: "short" });
+  const firstDay = affectedDeadlines[0].getDate();
+  const lastDay = affectedDeadlines[affectedDeadlines.length - 1].getDate();
+
+  if (firstDay === lastDay) {
+    return `${affectedDeadlines.length} deadlines fall on ${monthName} ${firstDay}. High risk period! 🚨`;
+  }
+
+  return `${affectedDeadlines.length} deadlines fall between ${monthName} ${firstDay}-${lastDay}. High risk period! 🚨`;
+}
+
+function buildRelativeAppData(data) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const windowStart = startOfWeekMonday(today);
+
+  const allDeadlineDates = data.assignments.map((assignment) => new Date(assignment.deadline));
+  const minDate = allDeadlineDates.reduce((min, current) => (current < min ? current : min), allDeadlineDates[0]);
+  const maxDate = allDeadlineDates.reduce((max, current) => (current > max ? current : max), allDeadlineDates[0]);
+
+  const assignments = data.assignments.map((assignment) => ({
+    ...assignment,
+    deadline: remapDeadlineToTwoWeeks(assignment.deadline, minDate, maxDate, windowStart),
+  }));
+
+  const alerts = data.alerts.map((alert) => {
+    if (alert.type !== "clustering_alert") return alert;
+    return {
+      ...alert,
+      message: buildClusteringAlertMessage(assignments, alert.affected_ids),
+    };
+  });
+
+  return {
+    ...data,
+    assignments,
+    alerts,
+    today_focus: {
+      ...data.today_focus,
+      date: formatLocalDate(today),
+    },
+  };
+}
+
+export const appData = buildRelativeAppData(rawAppData);
+
 export function buildWeeklyHeatmap(assignments) {
   const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   const today = new Date();
@@ -131,9 +224,8 @@ export function buildWeeklyHeatmap(assignments) {
 
   const week = [];
   for (let i = 0; i < 7; i++) {
-    const d = new Date(today);
-    d.setDate(today.getDate() + i);
-    const dateStr = d.toISOString().split('T')[0];
+    const d = addDays(today, i);
+    const dateStr = formatLocalDate(d);
     const count = assignments.filter(a => {
       if (a.submitted) return false;
       const dl = new Date(a.deadline);

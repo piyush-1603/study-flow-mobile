@@ -66,24 +66,30 @@ export function TasksTab({ assignments, onSubmit, onSnooze, onEdit, onViewDetail
   return (
     <div className="tab-fade-in">
       {/* Filter pills */}
-      <div className="sticky top-0 z-10 px-5 pt-5 pb-3"
-        style={{ background: 'var(--bg-glass)', backdropFilter: 'blur(12px)' }}>
+      <div
+        className="sticky top-0 z-10 px-5 pt-5 pb-3 border-b"
+        style={{ background: 'var(--bg-glass)', backdropFilter: 'saturate(180%) blur(12px)', borderColor: 'var(--border-light)' }}
+      >
         <div className="flex items-center justify-between mb-3">
-          <p className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>Tasks</p>
-          <button onClick={onSearch} className="w-9 h-9 rounded-full flex items-center justify-center"
-            style={{ background: 'var(--btn-glass)' }}>
-            <Search size={16} style={{ color: 'var(--text-secondary)' }} />
+          <p className="ui-display text-lg font-bold" style={{ color: 'var(--text-primary)' }}>Tasks</p>
+          <button type="button" onClick={onSearch} className="icon-btn !w-9 !h-9 !rounded-xl" aria-label="Search">
+            <Search size={16} style={{ color: 'var(--text-secondary)' }} strokeWidth={2} />
           </button>
         </div>
-        <div className="flex gap-2">
+        <div
+          className="flex p-1 rounded-xl gap-0.5"
+          style={{ background: 'var(--bg-surface-muted)', border: '1px solid var(--border-light)' }}
+        >
           {FILTERS.map(f => (
             <button
               key={f}
+              type="button"
               onClick={() => setFilter(f)}
-              className="flex-1 py-1.5 rounded-xl text-[11px] font-semibold transition-all"
+              className="flex-1 py-2 rounded-lg text-[10px] font-bold tracking-wide transition-all duration-200"
               style={{
-                background: filter === f ? '#6C63FF' : 'var(--btn-glass)',
-                color: filter === f ? '#fff' : 'var(--text-secondary)',
+                background: filter === f ? 'var(--bg-surface)' : 'transparent',
+                color: filter === f ? 'var(--brand-primary)' : 'var(--text-secondary)',
+                boxShadow: filter === f ? 'var(--shadow-main)' : 'none',
               }}
             >
               {f}

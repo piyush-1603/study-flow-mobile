@@ -42,12 +42,15 @@ export function AIStudyPlanner({ assignments }) {
   return (
     <div className="tab-fade-in pb-6">
       <div className="px-5 pt-6 pb-4 flex items-center gap-3">
-        <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: 'rgba(139, 92, 246, 0.15)', color: '#8B5CF6' }}>
-          <Sparkles size={20} />
+        <div
+          className="w-11 h-11 rounded-2xl flex items-center justify-center border"
+          style={{ background: 'rgba(108, 99, 255, 0.12)', color: 'var(--brand-primary)', borderColor: 'var(--border-light)' }}
+        >
+          <Sparkles size={22} strokeWidth={2} />
         </div>
         <div>
-          <h2 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>AI Plan</h2>
-          <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>Smart daily distribution</p>
+          <h2 className="ui-display text-2xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>Study plan</h2>
+          <p className="text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>Suggested focus blocks</p>
         </div>
       </div>
 
@@ -62,14 +65,9 @@ export function AIStudyPlanner({ assignments }) {
           const timeStr = hrs > 0 ? `${hrs}h ${mins > 0 ? `${mins}m` : ''}` : `${mins}m`;
 
           return (
-            <div 
+            <div
               key={bucket.id}
-              className="w-full rounded-2xl p-5 relative overflow-hidden"
-              style={{
-                background: 'var(--bg-surface)',
-                border: '1px solid var(--border-medium)',
-                boxShadow: 'var(--shadow-main)'
-              }}
+              className="surface-card w-full p-5 relative overflow-hidden"
             >
               {/* Subtle AI gradient background */}
               <div className="absolute top-0 right-0 w-32 h-32 rounded-full opacity-10 blur-2xl pointer-events-none"

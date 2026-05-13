@@ -22,13 +22,25 @@ const NAV_ITEMS = [
 
 function Snackbar({ message, onUndo, onDismiss }) {
   return (
-    <div className="fixed bottom-24 left-5 right-5 z-50 snack-slide-up">
-      <div className="flex items-center justify-between px-4 py-3 rounded-2xl"
-        style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-focus)', boxShadow: 'var(--shadow-main)' }}>
-        <span className="text-sm text-white font-medium">{message}</span>
-        <div className="flex items-center gap-3 ml-4">
-          <button onClick={onUndo} className="text-sm font-bold" style={{ color: '#6C63FF' }}>Undo</button>
-          <button onClick={onDismiss}><X size={14} className="text-gray-500" /></button>
+    <div className="fixed bottom-24 left-5 right-5 z-50 snack-slide-up max-w-[430px] mx-auto w-[calc(100%-2.5rem)]">
+      <div
+        className="flex items-center justify-between gap-3 px-4 py-3.5 rounded-2xl"
+        style={{
+          background: 'var(--bg-surface)',
+          border: '1px solid var(--border-medium)',
+          boxShadow: 'var(--shadow-elevated)',
+        }}
+      >
+        <span className="text-sm font-medium leading-snug" style={{ color: 'var(--text-primary)' }}>{message}</span>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          {onUndo && (
+            <button type="button" onClick={onUndo} className="text-sm font-bold px-2 py-1 rounded-lg active:opacity-80" style={{ color: 'var(--brand-primary)' }}>
+              Undo
+            </button>
+          )}
+          <button type="button" onClick={onDismiss} className="p-1.5 rounded-lg active:opacity-70" aria-label="Dismiss" style={{ color: 'var(--text-tertiary)' }}>
+            <X size={16} strokeWidth={2} />
+          </button>
         </div>
       </div>
     </div>
@@ -102,6 +114,17 @@ export default function App() {
     });
   };
 
+  const handleSignOut = () => {
+    setLoggedIn(false);
+    setActiveTab('home');
+    setShowSheet(false);
+    setEditingTask(null);
+    setViewingTask(null);
+    setShowSearch(false);
+    setSnackbar(null);
+    if (snackTimer) clearTimeout(snackTimer);
+  };
+
   const renderContent = () => {
     if (!loggedIn) return <LoginPage onLogin={() => setLoggedIn(true)} />;
     if (!onboarded) return <Onboarding onDone={() => setOnboarded(true)} />;
@@ -119,42 +142,48 @@ export default function App() {
 
         {/* FAB */}
         <button
+          type="button"
           onClick={() => setShowSheet(true)}
-          className="fixed z-30 w-14 h-14 rounded-full flex items-center justify-center shadow-2xl transition-all active:scale-90"
+          className="fixed z-30 w-14 h-14 rounded-full flex items-center justify-center transition-all active:scale-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--brand-primary)] focus-visible:ring-offset-[var(--bg-main)]"
           style={{
-            bottom: 84,
+            bottom: 88,
             right: 20,
-            background: 'linear-gradient(135deg, #6C63FF, #8B5CF6)',
-            boxShadow: '0 4px 24px rgba(108,99,255,0.5)',
+            background: 'linear-gradient(145deg, var(--brand-primary), var(--brand-secondary))',
+            boxShadow: 'var(--shadow-fab)',
           }}
+          aria-label="Add task"
         >
           <Plus size={26} className="text-white" strokeWidth={2.5} />
         </button>
 
         {/* Bottom Nav */}
-        <nav className="fixed bottom-0 left-0 right-0 w-full z-20 bottom-nav-glass">
-          <div className="flex items-center justify-around px-2 pt-2 pb-safe" style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}>
+        <nav className="fixed bottom-0 left-0 right-0 w-full z-20 bottom-nav-glass max-w-[430px] mx-auto">
+          <div className="flex items-end justify-around px-1 pt-3 pb-safe" style={{ paddingBottom: 'max(10px, env(safe-area-inset-bottom))' }}>
             {NAV_ITEMS.map(({ id, label, Icon }) => {
               const active = activeTab === id;
               return (
                 <button
                   key={id}
+                  type="button"
                   onClick={() => setActiveTab(id)}
-                  className="flex flex-col items-center gap-1 flex-1 py-1 transition-all"
+                  className={`flex flex-col items-center gap-0.5 flex-1 min-w-0 py-2 px-1 transition-all duration-200 ${active ? 'nav-tab-active' : ''}`}
                 >
-                  <div className="relative">
+                  <div className="relative flex items-center justify-center h-8">
                     <Icon
                       size={22}
-                      strokeWidth={active ? 2.5 : 1.8}
-                      style={{ color: active ? '#6C63FF' : 'var(--text-secondary)' }}
+                      strokeWidth={active ? 2.4 : 1.85}
+                      style={{ color: active ? 'var(--brand-primary)' : 'var(--text-secondary)' }}
                     />
                     {id === 'home' && appData.alerts.length > 0 && (
-                      <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-violet-500 shadow-[0_0_0_2px_var(--bg-surface)] transition-colors" />
+                      <span
+                        className="absolute -top-0.5 -right-1 w-2 h-2 rounded-full transition-colors"
+                        style={{ background: '#EF5350', boxShadow: '0 0 0 2px var(--bg-glass)' }}
+                      />
                     )}
                   </div>
                   <span
-                    className="text-[10px] font-semibold transition-colors"
-                    style={{ color: active ? '#6C63FF' : 'var(--text-tertiary)' }}
+                    className="text-[10px] font-semibold tracking-tight truncate max-w-full transition-colors"
+                    style={{ color: active ? 'var(--brand-primary)' : 'var(--text-tertiary)' }}
                   >
                     {label}
                   </span>
@@ -174,6 +203,7 @@ export default function App() {
     onEdit: handleEditTask,
     onViewDetail: setViewingTask,
     onSearch: () => setShowSearch(true),
+    onSignOut: handleSignOut,
     theme,
     setTheme
   };

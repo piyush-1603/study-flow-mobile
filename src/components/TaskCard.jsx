@@ -216,12 +216,13 @@ export function TaskCard({ assignment, onSubmit, onSnooze, onEdit, onViewDetail,
             : isSwipingLeft
               ? `0 0 0 1.5px rgba(249,168,37,${actionProgress * 0.8}), 0 8px 32px rgba(249,168,37,${actionProgress * 0.2})`
               : countdown.isOverdue
-                ? '0 0 0 1px rgba(239,83,80,0.5), 0 4px 20px rgba(239,83,80,0.1)'
-                : 'var(--shadow-main)',
+                ? '0 0 0 1px rgba(239,83,80,0.45), var(--shadow-card)'
+                : 'var(--shadow-card)',
           opacity: done ? 0.5 : 1,
           transform: `translateX(${offsetX}px)`,
           transition: released ? 'transform 0.28s cubic-bezier(0.34,1.4,0.64,1), box-shadow 0.2s' : 'box-shadow 0.1s',
-          borderRadius: '16px',
+          border: '1px solid var(--border-light)',
+          borderRadius: 'var(--radius-lg)',
           willChange: 'transform',
           position: 'relative',
           zIndex: 1,

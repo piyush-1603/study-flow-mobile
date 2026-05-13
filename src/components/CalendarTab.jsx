@@ -78,15 +78,13 @@ export function CalendarTab({ assignments, onSubmit, onSnooze, onEdit, onViewDet
     <div className="tab-fade-in">
       {/* Header */}
       <div className="px-5 pt-5 pb-3 flex items-center justify-between">
-        <p className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>Deadline Calendar</p>
+        <p className="ui-display text-lg font-bold" style={{ color: 'var(--text-primary)' }}>Calendar</p>
         <div className="flex gap-2">
-          <button onClick={onSearch} className="w-9 h-9 rounded-full flex items-center justify-center"
-            style={{ background: 'var(--btn-glass)' }}>
-            <Search size={16} style={{ color: 'var(--text-secondary)' }} />
+          <button type="button" onClick={onSearch} className="icon-btn !w-9 !h-9 !rounded-xl" aria-label="Search">
+            <Search size={16} style={{ color: 'var(--text-secondary)' }} strokeWidth={2} />
           </button>
-          <button className="w-9 h-9 rounded-full flex items-center justify-center"
-            style={{ background: 'var(--btn-glass)' }}>
-            <Bell size={16} style={{ color: 'var(--text-secondary)' }} />
+          <button type="button" className="icon-btn !w-9 !h-9 !rounded-xl" aria-label="Alerts">
+            <Bell size={16} style={{ color: 'var(--text-secondary)' }} strokeWidth={2} />
           </button>
         </div>
       </div>
@@ -103,7 +101,7 @@ export function CalendarTab({ assignments, onSubmit, onSnooze, onEdit, onViewDet
       )}
 
       {/* Heatmap */}
-      <div className="mx-5 mb-4 rounded-2xl p-4" style={{ background: 'var(--bg-surface)' }}>
+      <div className="mx-5 mb-4 surface-card p-4">
         <HeatmapStrip assignments={assignments} />
       </div>
 
